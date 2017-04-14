@@ -1,0 +1,16 @@
+{
+  "name": "ractive",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/core-js": "^0.9.37",
+    "@types/pixi.js": "^4.4.2",
+    "copy-webpack-plugin": "^4.0.1",
+    "live-server": "^1.2.0",
+    "pixi.js": "^4.5.0",
+    "ts-loader": "^2.0.1",
+    "typescript": "^2.2.1",
+    "webpack": "^2.2.1"
+  }
+}
