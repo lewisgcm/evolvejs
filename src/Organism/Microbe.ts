@@ -1,4 +1,6 @@
 import {IOrganism} from "./IOrganism";
+import {IReproduction} from "../Reproduction/IReproduction";
+import {SimpleReproduction} from "../Reproduction/SimpleReproduction";
 import "pixi.js";
 
 export class Microbe implements IOrganism {
@@ -17,6 +19,9 @@ export class Microbe implements IOrganism {
     private _directionDelta: number; //number of deltas spent on current course
     private _energy: number = this._startingEnergy; //we die when reaching zero
     private _isGestating: boolean = false;
+    private _reproduction: IReproduction = new SimpleReproduction();
+    private _deltaAge = 0;
+
 
     public static Create(container: PIXI.Container, x: number, y: number, viewWidth: number, viewHeight: number): Microbe {
         return new Microbe( container, x, y, viewWidth, viewHeight );
@@ -37,49 +42,39 @@ export class Microbe implements IOrganism {
         this._container.addChild(this._microbe);
     }
 
-    private asBinary(input: number): string {
-        return (input>>>0).toString(2);
-    }
-
     getGenome(): string {
-        var genome = `${(this.asBinary(this._speed))}${(this.asBinary(this._startingEnergy))}`;
-        genome += `${(this.asBinary(this._directionDurationDelta))}${(this.asBinary(this._size))}`;
-        return genome;
+        return this._reproduction.encode(
+            this._speed,
+            this._startingEnergy,
+            this._directionDurationDelta,
+            this._size,
+            this._gestationDuration,
+            this._canMoveWhilstGestating
+        );
     }
 
-    private replaceCharAt(string, index, character) {
-      return string.substr(0, index) + character + string.substr(index+character.length);
-   }
+    setGenome(genome: string) {
+        var data = this._reproduction.decode(genome);
+        this._speed = data[0];
+        this._startingEnergy = data[1];
+        this._directionDurationDelta = data[2];
+        this._size = data[3];
+        this._gestationDuration = data[4];
+        this._canMoveWhilstGestating = data[5];
+    }
 
-    proliferate(organism: Microbe): Promise<IOrganism[]> {
+    proliferate(organism: Microbe) {
         //Will do simple 50/50 split of reproduction, this will be configurable and part of genome
         //Also number of offspring etc will be configurable ATM will only be one
         this._isGestating = true;
-
-        var my = this.getGenome();
-        var other = organism.getGenome();
-
-        var newGenome = other.slice( 0, other.length / 2);
-        newGenome += my.slice(newGenome.length, my.length - newGenome.length);
-
-        //50% chance of mutation
-        if(Math.random() > 0.5) {
-            let gene = Math.floor(Math.random() * newGenome.length);
-            let tmp = newGenome[gene];
-            this.replaceCharAt(newGenome, gene, newGenome[newGenome.length-gene]);
-            this.replaceCharAt(newGenome, newGenome.length-gene, tmp);
-        }
-
-        return new Promise<Microbe[]>(
-            (success, error) => {
-                setTimeout(
-                    () => {
-                        this._isGestating = false;
-
-                    },
-                    this._gestationDuration
-                )
-            }
+        var newGenome = this._reproduction.reproduce( this, organism );
+        setTimeout(
+            () => {
+                this._isGestating = false;
+                var microbe = Microbe.Create( this._container, this._x, this._x, this._viewWidth, this._viewHeight );
+                microbe.setGenome( newGenome );
+            },
+            this._gestationDuration
         );
     }
 
@@ -94,6 +89,13 @@ export class Microbe implements IOrganism {
     }
 
     move(delta: number) {
+        this._deltaAge = ( this._deltaAge + delta) % 5000;
+
+        if( this._deltaAge > 500){
+            this.proliferate(this);
+            this._deltaAge = 0;
+        }
+
         //If we are gestating we cant move
         if( this._isGestating && !this._canMoveWhilstGestating ) {
             return;

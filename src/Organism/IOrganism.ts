@@ -1,7 +1,7 @@
 export interface IOrganism {
     getGenome(): string;
-    
-    proliferate(organism: IOrganism): Promise<IOrganism[]>;
+    setGenome(genome: string);
+    proliferate(organism: IOrganism);
 
     move(delta: number);
 }
