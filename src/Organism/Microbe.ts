@@ -1,6 +1,7 @@
 import {IOrganism} from "./IOrganism";
 import {IReproduction} from "../Reproduction/IReproduction";
 import {SimpleReproduction} from "../Reproduction/SimpleReproduction";
+import {Scene} from "../Scene";
 import "pixi.js";
 
 export class Microbe implements IOrganism {
@@ -23,16 +24,15 @@ export class Microbe implements IOrganism {
     private _deltaAge = 0;
 
 
-    public static Create(container: PIXI.Container, x: number, y: number, viewWidth: number, viewHeight: number): Microbe {
-        return new Microbe( container, x, y, viewWidth, viewHeight );
+    public static Create(container: PIXI.Container, x: number, y: number, scene: Scene): Microbe {
+        return new Microbe( container, x, y, scene );
     }
 
     constructor(
         private _container: PIXI.Container,
         private _x: number,
         private _y: number,
-        private _viewWidth: number,
-        private _viewHeight: number) {
+        private _scene: Scene) {
 
         this._microbe = new PIXI.Graphics();
         this._microbe.lineStyle(2, 0x35eFFF);
@@ -55,12 +55,13 @@ export class Microbe implements IOrganism {
 
     setGenome(genome: string) {
         var data = this._reproduction.decode(genome);
+        console.log(data);
         this._speed = data[0];
         this._startingEnergy = data[1];
         this._directionDurationDelta = data[2];
         this._size = data[3];
         this._gestationDuration = data[4];
-        this._canMoveWhilstGestating = data[5];
+        this._canMoveWhilstGestating = data[5] > 0;
     }
 
     proliferate(organism: Microbe) {
@@ -71,8 +72,9 @@ export class Microbe implements IOrganism {
         setTimeout(
             () => {
                 this._isGestating = false;
-                var microbe = Microbe.Create( this._container, this._x, this._x, this._viewWidth, this._viewHeight );
+                var microbe = Microbe.Create( this._container, this._x, this._x, this._scene );
                 microbe.setGenome( newGenome );
+                this._scene.add(microbe);
             },
             this._gestationDuration
         );
@@ -102,10 +104,10 @@ export class Microbe implements IOrganism {
         }
 
         this._direction = this.getDirection(delta);
-        this._x = (this._x + (Math.sin(this._direction)*this._speed*delta)) % this._viewWidth;
-        this._y = (this._y + (Math.cos(this._direction)*this._speed*delta)) % this._viewHeight;
-        this._x = (this._x < 0) ? this._viewWidth : this._x;
-        this._y = (this._y < 0) ? this._viewHeight : this._y;
+        this._x = (this._x + (Math.sin(this._direction)*this._speed*delta)) % this._scene.width();
+        this._y = (this._y + (Math.cos(this._direction)*this._speed*delta)) % this._scene.height();
+        this._x = (this._x < 0) ? this._scene.width() : this._x;
+        this._y = (this._y < 0) ? this._scene.height() : this._y;
         this._microbe.x = this._x;
         this._microbe.y = this._y;
     }

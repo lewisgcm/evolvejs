@@ -1,6 +1,8 @@
 import "pixi.js"
 import { SimpleFood } from "./Food/SimpleFood"
 import { Microbe } from "./Organism/Microbe";
+import { Scene } from "./Scene";
+
 const WIDTH = 800;
 const HEIGHT = 600;
 
@@ -11,13 +13,15 @@ var app = new PIXI.Application(
 );
 document.body.appendChild(app.view);
 
-var microbe = Microbe.Create( app.stage, 0, 0, WIDTH, HEIGHT );
+var scene = new Scene( app.stage, WIDTH, HEIGHT );
+var microbe = Microbe.Create( app.stage, 0, 0, scene );
+scene.add( microbe );
 
 app.ticker.add(function(delta) {
     // rotate the container!
     // use delta to create frame-independent tranform
     //container.rotation -= 0.01 * delta;
-    microbe.move(delta);
+    scene.render(delta);
 });
 
 setInterval(

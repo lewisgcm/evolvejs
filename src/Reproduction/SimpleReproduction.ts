@@ -8,7 +8,7 @@ export class SimpleReproduction implements IReproduction {
     }
 
     private asBinary(input: number): string {
-        return ("00000000000000000000000000000000"+(input>>>0).toString(2)).slice(-32);
+        return ("0000000000000000000000000000000"+((input>>>0).toString(2))).slice(-32);
     }
 
     encode(...args: any[]): string {
@@ -37,14 +37,13 @@ export class SimpleReproduction implements IReproduction {
         var other = parentTwo.getGenome();
 
         var newGenome = other.slice( 0, other.length / 2);
-        newGenome += my.slice(newGenome.length, my.length - newGenome.length);
+        newGenome += my.slice(-newGenome.length);
 
         //50% chance of mutation
         if(Math.random() > 0.5) {
             let gene = Math.floor(Math.random() * newGenome.length);
-            let tmp = newGenome[gene];
-            this.replaceCharAt(newGenome, gene, newGenome[newGenome.length-gene]);
-            this.replaceCharAt(newGenome, newGenome.length-gene, tmp);
+            let tmp = (Math.random() > 0.5) ? '1' : '0';
+            newGenome = this.replaceCharAt(newGenome, gene, tmp);
         }
 
         return newGenome;
