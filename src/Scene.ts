@@ -24,6 +24,16 @@ export class Scene {
         this._organisms.push( organism );
     }
 
+    remove(organism: IOrganism) {
+        var index = this
+            ._organisms
+            .indexOf(organism);
+        
+        if( index != -1 ) {
+            this._organisms.splice(index, 1);
+        }
+    }
+
     render(delta) {
         for(let i = 0; i < this._organisms.length; i++){
             this._organisms[i].move(delta);
