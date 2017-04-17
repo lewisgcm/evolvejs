@@ -14,8 +14,8 @@ var app = new PIXI.Application(
 document.body.appendChild(app.view);
 
 var scene = new Scene( app.stage, WIDTH, HEIGHT );
-var microbe = Microbe.Create( app.stage, 0, 0, scene );
-scene.add( microbe );
+var microbe = Microbe.Create( app.stage, WIDTH/2, HEIGHT/2, scene );
+scene.addOrganism( microbe );
 
 app.ticker.add(function(delta) {
     // rotate the container!
@@ -26,9 +26,9 @@ app.ticker.add(function(delta) {
 
 setInterval(
     () => {
-        /*var x = Math.random() * WIDTH;
+        var x = Math.random() * WIDTH;
         var y = Math.random() * HEIGHT;
-        SimpleFood.Create( app.stage, x, y );*/
+        SimpleFood.Create( app.stage, x, y, scene );
     },
     1000
 );
